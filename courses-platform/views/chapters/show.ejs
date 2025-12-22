@@ -1,0 +1,175 @@
+<div class="flex">
+    <!-- Sidebar -->
+    <%- include('../partials/sidebar', { course, allChapters, chapter, progressMap: typeof progressMap !== 'undefined' ? progressMap : {}, labProgress: typeof labProgress !== 'undefined' ? labProgress : {} }) %>
+
+    <!-- Main Content -->
+    <div class="flex-1 min-w-0 px-8">
+        <!-- Navigation -->
+        <div class="flex items-center justify-between mb-6">
+            <a href="/courses/<%= course.slug %>" class="text-gray-400 hover:text-white flex items-center text-sm">
+                <svg class="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+                Back to Course
+            </a>
+
+            <% if (typeof currentUser !== 'undefined' && currentUser && currentUser.canEditCourses && currentUser.canEditCourses()) { %>
+                <div class="flex items-center space-x-3">
+                    <a href="/labs/new?chapterId=<%= chapter.id %>" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm">
+                        + Add Lab
+                    </a>
+                    <a href="/chapters/<%= chapter.id %>/edit" class="text-gray-400 hover:text-white text-sm">
+                        Edit Chapter
+                    </a>
+                </div>
+            <% } %>
+        </div>
+
+        <!-- Chapter Header -->
+        <div class="mb-8">
+            <div class="text-sm text-gray-400 mb-2">Chapter <%= chapter.orderIndex + 1 %></div>
+            <h1 class="text-3xl font-bold text-white"><%= chapter.title %></h1>
+
+            <% if (chapter.estimatedMinutes) { %>
+                <div class="text-gray-400 mt-2">
+                    <svg class="inline-block w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <%= chapter.estimatedMinutes %> min read
+                </div>
+            <% } %>
+        </div>
+
+        <!-- Story Context -->
+        <% if (chapter.storyContext) { %>
+            <div class="story-box p-6 rounded-xl mb-8">
+                <div class="text-xs text-green-400 uppercase tracking-wider mb-2">The Story So Far</div>
+                <p class="text-gray-200 italic text-lg">"<%= chapter.storyContext %>"</p>
+            </div>
+        <% } %>
+
+        <!-- Previously Summary -->
+        <% if (chapter.previouslySummary) { %>
+            <div class="bg-gray-800 border-l-4 border-yellow-500 p-4 rounded-r-lg mb-8">
+                <div class="text-xs text-yellow-400 uppercase tracking-wider mb-1">Previously...</div>
+                <p class="text-gray-300 text-sm"><%= chapter.previouslySummary %></p>
+            </div>
+        <% } %>
+
+        <!-- Learning Objectives -->
+        <% if (chapter.learningObjectives && chapter.learningObjectives.length > 0) { %>
+            <div class="bg-gray-800 rounded-xl p-6 border border-gray-700 mb-8">
+                <h2 class="text-lg font-bold text-white mb-4">Learning Objectives</h2>
+                <ul class="space-y-2">
+                    <% chapter.learningObjectives.forEach(obj => { %>
+                        <li class="flex items-start text-gray-300">
+                            <svg class="w-5 h-5 text-green-500 mr-2 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                            </svg>
+                            <%= obj %>
+                        </li>
+                    <% }); %>
+                </ul>
+            </div>
+        <% } %>
+
+        <!-- Main Content -->
+        <% if (chapter.content) { %>
+            <div class="prose prose-invert prose-green max-w-none mb-8">
+                <%- marked(chapter.content) %>
+            </div>
+        <% } %>
+
+        <!-- Labs Section -->
+        <% if (chapter.labs && chapter.labs.length > 0) { %>
+            <div class="mt-12 pt-8 border-t border-gray-700">
+                <h2 class="text-xl font-bold text-white mb-6">Hands-on Labs</h2>
+                <div class="grid gap-4">
+                    <% chapter.labs.forEach(lab => { %>
+                        <% const labProg = labProgress[lab.id]; %>
+                        <a href="/labs/<%= lab.id %>" class="bg-gray-800 rounded-xl p-6 border border-gray-700 hover:border-green-600 transition-colors flex items-center justify-between">
+                            <div class="flex items-center space-x-4">
+                                <div class="w-12 h-12 rounded-lg flex items-center justify-center
+                                    <%= labProg?.status === 'completed' ? 'bg-green-600' :
+                                       labProg?.status === 'in_progress' ? 'bg-yellow-600' :
+                                       'bg-gray-700' %>">
+                                    <% if (labProg?.status === 'completed') { %>
+                                        <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                                        </svg>
+                                    <% } else { %>
+                                        <svg class="w-6 h-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                        </svg>
+                                    <% } %>
+                                </div>
+                                <div>
+                                    <h3 class="text-lg font-semibold text-white"><%= lab.title %></h3>
+                                    <p class="text-gray-400 text-sm"><%= lab.description || 'Hands-on practice' %></p>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-4">
+                                <span class="px-3 py-1 rounded-full text-xs font-medium
+                                    <%= lab.difficulty === 'easy' ? 'bg-green-900 text-green-300' :
+                                       lab.difficulty === 'medium' ? 'bg-yellow-900 text-yellow-300' :
+                                       lab.difficulty === 'hard' ? 'bg-orange-900 text-orange-300' :
+                                       'bg-red-900 text-red-300' %>">
+                                    <%= lab.difficulty || 'medium' %>
+                                </span>
+                                <svg class="w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                </svg>
+                            </div>
+                        </a>
+                    <% }); %>
+                </div>
+            </div>
+        <% } %>
+
+        <!-- Chapter Navigation -->
+        <div class="mt-12 pt-8 border-t border-gray-700 flex items-center justify-between">
+            <% if (prevChapter) { %>
+                <a href="/chapters/<%= prevChapter.id %>" class="flex items-center text-gray-400 hover:text-white">
+                    <svg class="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                    </svg>
+                    <span class="text-sm">Previous: <%= prevChapter.title %></span>
+                </a>
+            <% } else { %>
+                <div></div>
+            <% } %>
+
+            <% if (typeof currentUser !== 'undefined' && currentUser && chapterProgress?.status !== 'completed') { %>
+                <button onclick="markComplete()" class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-medium">
+                    Mark as Complete
+                </button>
+            <% } %>
+
+            <% if (nextChapter) { %>
+                <a href="/chapters/<%= nextChapter.id %>" class="flex items-center text-gray-400 hover:text-white">
+                    <span class="text-sm">Next: <%= nextChapter.title %></span>
+                    <svg class="w-5 h-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                    </svg>
+                </a>
+            <% } else { %>
+                <div></div>
+            <% } %>
+        </div>
+    </div>
+</div>
+
+<script>
+function markComplete() {
+    fetch('/chapters/<%= chapter.id %>/complete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        }
+    });
+}
+</script>

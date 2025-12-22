@@ -1,0 +1,100 @@
+<div class="flex items-center justify-between mb-8">
+    <div>
+        <h1 class="text-3xl font-bold text-white">Courses</h1>
+        <p class="text-gray-400 mt-2">Explore security research topics</p>
+    </div>
+
+    <% if (typeof currentUser !== 'undefined' && currentUser && currentUser.canEditCourses && currentUser.canEditCourses()) { %>
+        <a href="/courses/new" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium">
+            + New Course
+        </a>
+    <% } %>
+</div>
+
+<% if (typeof courses !== 'undefined' && courses.length > 0) { %>
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <% courses.forEach(course => { %>
+            <div class="bg-gray-800 rounded-xl overflow-hidden border border-gray-700 hover:border-green-600 transition-colors group">
+                <div class="p-6">
+                    <!-- Status badges -->
+                    <div class="flex items-center justify-between mb-4">
+                        <span class="px-3 py-1 rounded-full text-xs font-medium
+                            <%= course.difficulty === 'beginner' ? 'bg-green-900 text-green-300' :
+                               course.difficulty === 'intermediate' ? 'bg-yellow-900 text-yellow-300' :
+                               course.difficulty === 'advanced' ? 'bg-orange-900 text-orange-300' :
+                               'bg-red-900 text-red-300' %>">
+                            <%= course.difficulty ? course.difficulty.charAt(0).toUpperCase() + course.difficulty.slice(1) : 'Intermediate' %>
+                        </span>
+
+                        <% if (!course.isPublished) { %>
+                            <span class="px-2 py-1 bg-gray-700 text-gray-400 rounded text-xs">Draft</span>
+                        <% } %>
+                    </div>
+
+                    <h3 class="text-xl font-bold text-white mb-2 group-hover:text-green-400 transition-colors">
+                        <a href="/courses/<%= course.slug %>">
+                            <%= course.title %>
+                        </a>
+                    </h3>
+
+                    <p class="text-gray-400 text-sm mb-4 line-clamp-3">
+                        <%= course.shortDescription || course.description || 'No description' %>
+                    </p>
+
+                    <!-- Stats -->
+                    <div class="flex items-center text-sm text-gray-500 space-x-4 mb-4">
+                        <span class="flex items-center">
+                            <svg class="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                            </svg>
+                            <%= course.chapterCount || 0 %> chapters
+                        </span>
+                        <% if (course.estimatedHours) { %>
+                            <span class="flex items-center">
+                                <svg class="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                <%= course.estimatedHours %>h
+                            </span>
+                        <% } %>
+                    </div>
+
+                    <!-- Tags -->
+                    <% if (course.tags && course.tags.length > 0) { %>
+                        <div class="flex flex-wrap gap-2 mb-4">
+                            <% course.tags.slice(0, 3).forEach(tag => { %>
+                                <span class="px-2 py-1 bg-gray-700 rounded text-xs text-gray-300"><%= tag %></span>
+                            <% }); %>
+                        </div>
+                    <% } %>
+
+                    <div class="flex items-center justify-between pt-4 border-t border-gray-700">
+                        <a href="/courses/<%= course.slug %>" class="text-green-500 hover:text-green-400 font-medium text-sm">
+                            View Course &rarr;
+                        </a>
+
+                        <% if (typeof currentUser !== 'undefined' && currentUser && currentUser.canEditCourses && currentUser.canEditCourses()) { %>
+                            <a href="/courses/<%= course.slug %>/edit" class="text-gray-500 hover:text-gray-300 text-sm">
+                                Edit
+                            </a>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+        <% }); %>
+    </div>
+<% } else { %>
+    <div class="text-center py-16 bg-gray-800 rounded-xl border border-gray-700">
+        <svg class="mx-auto h-16 w-16 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+        </svg>
+        <h3 class="mt-4 text-xl font-medium text-white">No courses yet</h3>
+        <p class="mt-2 text-gray-400">Check back soon for new content!</p>
+
+        <% if (typeof currentUser !== 'undefined' && currentUser && currentUser.canEditCourses && currentUser.canEditCourses()) { %>
+            <a href="/courses/new" class="mt-6 inline-block bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg">
+                Create First Course
+            </a>
+        <% } %>
+    </div>
+<% } %>

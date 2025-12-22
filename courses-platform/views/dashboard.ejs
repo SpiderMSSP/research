@@ -1,0 +1,131 @@
+<div class="mb-8">
+    <h1 class="text-3xl font-bold text-white">My Dashboard</h1>
+    <p class="text-gray-400 mt-2">Track your learning progress across all courses</p>
+</div>
+
+<!-- Stats Overview -->
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+    <div class="bg-gray-800 rounded-lg p-4 border border-gray-700">
+        <div class="text-2xl font-bold text-green-500" id="stat-chapters">0</div>
+        <div class="text-sm text-gray-400">Chapters Completed</div>
+    </div>
+    <div class="bg-gray-800 rounded-lg p-4 border border-gray-700">
+        <div class="text-2xl font-bold text-blue-500" id="stat-labs">0</div>
+        <div class="text-sm text-gray-400">Labs Completed</div>
+    </div>
+    <div class="bg-gray-800 rounded-lg p-4 border border-gray-700">
+        <div class="text-2xl font-bold text-yellow-500" id="stat-progress">0</div>
+        <div class="text-sm text-gray-400">In Progress</div>
+    </div>
+    <div class="bg-gray-800 rounded-lg p-4 border border-gray-700">
+        <div class="text-2xl font-bold text-purple-500" id="stat-time">0h</div>
+        <div class="text-sm text-gray-400">Time Spent</div>
+    </div>
+</div>
+
+<!-- Courses Progress -->
+<h2 class="text-xl font-bold text-white mb-4">Course Progress</h2>
+
+<% if (typeof courses !== 'undefined' && courses.length > 0) { %>
+    <div class="space-y-6">
+        <% courses.forEach(course => { %>
+            <%
+                let totalItems = 0;
+                let completedItems = 0;
+
+                course.chapters.forEach(chapter => {
+                    totalItems++;
+                    if (progressMap[`chapter_${chapter.id}`]?.status === 'completed') completedItems++;
+
+                    chapter.labs.forEach(lab => {
+                        totalItems++;
+                        if (progressMap[`lab_${lab.id}`]?.status === 'completed') completedItems++;
+                    });
+                });
+
+                const progressPercent = totalItems > 0 ? Math.round((completedItems / totalItems) * 100) : 0;
+            %>
+
+            <div class="bg-gray-800 rounded-xl p-6 border border-gray-700">
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <h3 class="text-lg font-bold text-white">
+                            <a href="/courses/<%= course.slug %>" class="hover:text-green-400">
+                                <%= course.title %>
+                            </a>
+                        </h3>
+                        <p class="text-sm text-gray-400">
+                            <%= course.chapters.length %> chapters
+                        </p>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-2xl font-bold text-green-500"><%= progressPercent %>%</div>
+                        <div class="text-xs text-gray-400">Complete</div>
+                    </div>
+                </div>
+
+                <!-- Progress Bar -->
+                <div class="w-full bg-gray-700 rounded-full h-3 mb-4">
+                    <div class="bg-green-500 h-3 rounded-full progress-bar" style="width: <%= progressPercent %>%"></div>
+                </div>
+
+                <!-- Chapter List -->
+                <div class="grid grid-cols-2 md:grid-cols-5 lg:grid-cols-10 gap-2">
+                    <% course.chapters.forEach((chapter, index) => { %>
+                        <%
+                            const chapterProgress = progressMap[`chapter_${chapter.id}`];
+                            const status = chapterProgress?.status || 'not_started';
+                        %>
+                        <a href="/chapters/<%= chapter.id %>"
+                           class="flex items-center justify-center w-10 h-10 rounded-lg text-sm font-medium transition-colors
+                                  <%= status === 'completed' ? 'bg-green-600 text-white' :
+                                     status === 'in_progress' ? 'bg-yellow-600 text-white' :
+                                     'bg-gray-700 text-gray-400 hover:bg-gray-600' %>"
+                           title="<%= chapter.title %>">
+                            <% if (status === 'completed') { %>
+                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                                </svg>
+                            <% } else { %>
+                                <%= index + 1 %>
+                            <% } %>
+                        </a>
+                    <% }); %>
+                </div>
+
+                <div class="mt-4">
+                    <a href="/courses/<%= course.slug %>" class="text-green-500 hover:text-green-400 text-sm font-medium">
+                        Continue Learning &rarr;
+                    </a>
+                </div>
+            </div>
+        <% }); %>
+    </div>
+<% } else { %>
+    <div class="text-center py-12 bg-gray-800 rounded-xl border border-gray-700">
+        <svg class="mx-auto h-12 w-12 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+        </svg>
+        <h3 class="mt-4 text-lg font-medium text-white">No courses available</h3>
+        <p class="mt-2 text-gray-400">Check back soon for new content!</p>
+        <a href="/courses" class="mt-4 inline-block bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg">
+            Browse Courses
+        </a>
+    </div>
+<% } %>
+
+<script>
+    // Fetch and display stats
+    fetch('/progress/stats')
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                document.getElementById('stat-chapters').textContent = data.stats.completedChapters;
+                document.getElementById('stat-labs').textContent = data.stats.completedLabs;
+                document.getElementById('stat-progress').textContent = data.stats.inProgress;
+                const hours = Math.floor(data.stats.totalTimeSpent / 60);
+                document.getElementById('stat-time').textContent = hours + 'h';
+            }
+        })
+        .catch(err => console.error('Error fetching stats:', err));
+</script>

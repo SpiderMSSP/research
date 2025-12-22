@@ -1,0 +1,69 @@
+<div class="max-w-3xl mx-auto">
+    <h1 class="text-3xl font-bold text-white mb-2">Edit Chapter</h1>
+    <p class="text-gray-400 mb-8">Course: <%= course.title %></p>
+
+    <form action="/chapters/<%= chapter.id %>?_method=PUT" method="POST" class="bg-gray-800 rounded-xl p-6 border border-gray-700 space-y-6">
+        <div class="grid md:grid-cols-4 gap-6">
+            <div class="md:col-span-3">
+                <label for="title" class="block text-sm font-medium text-gray-300 mb-2">Chapter Title *</label>
+                <input type="text" id="title" name="title" required value="<%= chapter.title %>"
+                       class="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-green-500">
+            </div>
+            <div>
+                <label for="orderIndex" class="block text-sm font-medium text-gray-300 mb-2">Order</label>
+                <input type="number" id="orderIndex" name="orderIndex" value="<%= chapter.orderIndex %>"
+                       class="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-green-500">
+            </div>
+        </div>
+
+        <div>
+            <label for="storyContext" class="block text-sm font-medium text-gray-300 mb-2">Story Context</label>
+            <textarea id="storyContext" name="storyContext" rows="2"
+                      class="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-green-500"><%= chapter.storyContext || '' %></textarea>
+        </div>
+
+        <div>
+            <label for="previouslySummary" class="block text-sm font-medium text-gray-300 mb-2">"Previously on..." Summary</label>
+            <textarea id="previouslySummary" name="previouslySummary" rows="2"
+                      class="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-green-500"><%= chapter.previouslySummary || '' %></textarea>
+        </div>
+
+        <div>
+            <label for="learningObjectives" class="block text-sm font-medium text-gray-300 mb-2">Learning Objectives (one per line)</label>
+            <textarea id="learningObjectives" name="learningObjectives" rows="4"
+                      class="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-green-500"><%= chapter.learningObjectives ? chapter.learningObjectives.join('\n') : '' %></textarea>
+        </div>
+
+        <div>
+            <label for="content" class="block text-sm font-medium text-gray-300 mb-2">Chapter Content (Markdown)</label>
+            <textarea id="content" name="content" rows="20"
+                      class="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white font-mono text-sm focus:outline-none focus:border-green-500"><%= chapter.content || '' %></textarea>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-6">
+            <div>
+                <label for="estimatedMinutes" class="block text-sm font-medium text-gray-300 mb-2">Estimated Minutes</label>
+                <input type="number" id="estimatedMinutes" name="estimatedMinutes" value="<%= chapter.estimatedMinutes || '' %>"
+                       class="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-green-500">
+            </div>
+            <div>
+                <label for="videoUrl" class="block text-sm font-medium text-gray-300 mb-2">Video URL</label>
+                <input type="url" id="videoUrl" name="videoUrl" value="<%= chapter.videoUrl || '' %>"
+                       class="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-green-500">
+            </div>
+        </div>
+
+        <div class="flex items-center justify-between pt-4 border-t border-gray-700">
+            <div class="flex items-center space-x-4">
+                <a href="/chapters/<%= chapter.id %>" class="text-gray-400 hover:text-white">Cancel</a>
+                <form action="/chapters/<%= chapter.id %>?_method=DELETE" method="POST" class="inline"
+                      onsubmit="return confirm('Delete this chapter?')">
+                    <button type="submit" class="text-red-500 hover:text-red-400">Delete</button>
+                </form>
+            </div>
+            <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-semibold">
+                Save Changes
+            </button>
+        </div>
+    </form>
+</div>

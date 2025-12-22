@@ -1,0 +1,35 @@
+/*
+ * versioned_lib.map - Linker Version Script
+ *
+ * This script defines symbol versions for the shared library.
+ * Used with: gcc -Wl,--version-script=versioned_lib.map
+ *
+ * Syntax:
+ *   VERSION_TAG {
+ *       global:
+ *           symbol1;
+ *           symbol2;
+ *       local:
+ *           *;
+ *   };
+ *
+ *   NEWER_VERSION {
+ *       ...
+ *   } OLDER_VERSION;  // inherits from OLDER_VERSION
+ */
+
+/* Base version - compatibility for old binaries */
+VERS_1.0 {
+    global:
+        process_input;
+        get_version;
+    local:
+        *;
+};
+
+/* New version - inherits from 1.0, adds fixed functions */
+VERS_2.0 {
+    global:
+        process_input;
+        get_version;
+} VERS_1.0;

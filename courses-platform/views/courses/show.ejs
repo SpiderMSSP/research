@@ -1,0 +1,218 @@
+<!-- Course Header -->
+<div class="mb-8">
+    <div class="flex items-center justify-between">
+        <div>
+            <div class="flex items-center space-x-3 mb-2">
+                <span class="px-3 py-1 rounded-full text-xs font-medium
+                    <%= course.difficulty === 'beginner' ? 'bg-green-900 text-green-300' :
+                       course.difficulty === 'intermediate' ? 'bg-yellow-900 text-yellow-300' :
+                       course.difficulty === 'advanced' ? 'bg-orange-900 text-orange-300' :
+                       'bg-red-900 text-red-300' %>">
+                    <%= course.difficulty ? course.difficulty.charAt(0).toUpperCase() + course.difficulty.slice(1) : 'Intermediate' %>
+                </span>
+                <% if (!course.isPublished) { %>
+                    <span class="px-2 py-1 bg-yellow-900 text-yellow-300 rounded text-xs">Unpublished</span>
+                <% } %>
+            </div>
+            <h1 class="text-3xl font-bold text-white"><%= course.title %></h1>
+        </div>
+
+        <% if (typeof currentUser !== 'undefined' && currentUser && currentUser.canEditCourses && currentUser.canEditCourses()) { %>
+            <div class="flex items-center space-x-3">
+                <a href="/chapters/new?courseId=<%= course.id %>" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm">
+                    + Add Chapter
+                </a>
+                <a href="/courses/<%= course.slug %>/edit" class="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg text-sm">
+                    Edit Course
+                </a>
+            </div>
+        <% } %>
+    </div>
+
+    <% if (course.shortDescription || course.description) { %>
+        <p class="text-gray-400 mt-4 max-w-3xl">
+            <%= course.shortDescription || course.description %>
+        </p>
+    <% } %>
+
+    <!-- Progress bar for logged-in users -->
+    <% if (typeof currentUser !== 'undefined' && currentUser && typeof courseProgress !== 'undefined') { %>
+        <div class="mt-6 max-w-md">
+            <div class="flex justify-between text-sm mb-2">
+                <span class="text-gray-400">Your Progress</span>
+                <span class="text-green-500 font-medium"><%= courseProgress %>%</span>
+            </div>
+            <div class="w-full bg-gray-700 rounded-full h-3">
+                <div class="bg-green-500 h-3 rounded-full progress-bar" style="width: <%= courseProgress %>%"></div>
+            </div>
+        </div>
+    <% } %>
+</div>
+
+<!-- Course Info Cards -->
+<div class="grid md:grid-cols-4 gap-4 mb-8">
+    <div class="bg-gray-800 rounded-lg p-4 border border-gray-700">
+        <div class="text-2xl font-bold text-white"><%= course.chapters ? course.chapters.length : 0 %></div>
+        <div class="text-sm text-gray-400">Chapters</div>
+    </div>
+    <% if (course.estimatedHours) { %>
+        <div class="bg-gray-800 rounded-lg p-4 border border-gray-700">
+            <div class="text-2xl font-bold text-white"><%= course.estimatedHours %>h</div>
+            <div class="text-sm text-gray-400">Estimated Time</div>
+        </div>
+    <% } %>
+    <%
+        let labCount = 0;
+        if (course.chapters) {
+            course.chapters.forEach(ch => { if (ch.labs) labCount += ch.labs.length; });
+        }
+    %>
+    <div class="bg-gray-800 rounded-lg p-4 border border-gray-700">
+        <div class="text-2xl font-bold text-white"><%= labCount %></div>
+        <div class="text-sm text-gray-400">Hands-on Labs</div>
+    </div>
+</div>
+
+<!-- Learning Objectives -->
+<% if (course.objectives && course.objectives.length > 0) { %>
+    <div class="bg-gray-800 rounded-xl p-6 border border-gray-700 mb-8">
+        <h2 class="text-lg font-bold text-white mb-4">What You'll Learn</h2>
+        <ul class="grid md:grid-cols-2 gap-3">
+            <% course.objectives.forEach(obj => { %>
+                <li class="flex items-start text-gray-300">
+                    <svg class="w-5 h-5 text-green-500 mr-2 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                    </svg>
+                    <%= obj %>
+                </li>
+            <% }); %>
+        </ul>
+    </div>
+<% } %>
+
+<!-- Chapters List -->
+<h2 class="text-xl font-bold text-white mb-4">Course Content</h2>
+
+<% if (course.chapters && course.chapters.length > 0) { %>
+    <div class="space-y-4">
+        <% course.chapters.forEach((chapter, index) => { %>
+            <%
+                const chProgress = progressMap ? progressMap[`chapter_${chapter.id}`] : null;
+                const status = chProgress?.status || 'not_started';
+            %>
+            <div class="bg-gray-800 rounded-xl border border-gray-700 overflow-hidden" x-data="{ open: false }">
+                <!-- Chapter Header -->
+                <div class="p-4 flex items-center justify-between cursor-pointer hover:bg-gray-750" @click="open = !open">
+                    <div class="flex items-center space-x-4">
+                        <div class="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold
+                            <%= status === 'completed' ? 'bg-green-600 text-white' :
+                               status === 'in_progress' ? 'bg-yellow-600 text-white' :
+                               'bg-gray-700 text-gray-300' %>">
+                            <% if (status === 'completed') { %>
+                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                                </svg>
+                            <% } else { %>
+                                <%= index + 1 %>
+                            <% } %>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-semibold text-white"><%= chapter.title %></h3>
+                            <div class="flex items-center text-sm text-gray-400 space-x-3">
+                                <% if (chapter.estimatedMinutes) { %>
+                                    <span><%= chapter.estimatedMinutes %> min</span>
+                                <% } %>
+                                <% if (chapter.labs && chapter.labs.length > 0) { %>
+                                    <span><%= chapter.labs.length %> lab<%= chapter.labs.length > 1 ? 's' : '' %></span>
+                                <% } %>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center space-x-3">
+                        <a href="/chapters/<%= chapter.id %>" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm" @click.stop>
+                            <%= status === 'not_started' ? 'Start' : status === 'in_progress' ? 'Continue' : 'Review' %>
+                        </a>
+                        <svg class="w-5 h-5 text-gray-400 transform transition-transform" :class="{ 'rotate-180': open }" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- Chapter Details (collapsible) -->
+                <div x-show="open" x-collapse class="border-t border-gray-700">
+                    <% if (chapter.storyContext) { %>
+                        <div class="p-4 story-box m-4 rounded-lg">
+                            <div class="text-xs text-green-400 uppercase tracking-wider mb-1">Story Context</div>
+                            <p class="text-gray-300 text-sm italic">"<%= chapter.storyContext %>"</p>
+                        </div>
+                    <% } %>
+
+                    <% if (chapter.learningObjectives && chapter.learningObjectives.length > 0) { %>
+                        <div class="px-4 pb-4">
+                            <div class="text-sm text-gray-400 mb-2">Learning Objectives:</div>
+                            <ul class="space-y-1">
+                                <% chapter.learningObjectives.forEach(obj => { %>
+                                    <li class="text-sm text-gray-300 flex items-start">
+                                        <span class="text-green-500 mr-2">-</span>
+                                        <%= obj %>
+                                    </li>
+                                <% }); %>
+                            </ul>
+                        </div>
+                    <% } %>
+
+                    <!-- Labs in this chapter -->
+                    <% if (chapter.labs && chapter.labs.length > 0) { %>
+                        <div class="px-4 pb-4">
+                            <div class="text-sm text-gray-400 mb-2">Hands-on Labs:</div>
+                            <div class="space-y-2">
+                                <% chapter.labs.forEach(lab => { %>
+                                    <%
+                                        const labProg = progressMap ? progressMap[`lab_${lab.id}`] : null;
+                                        const labStatus = labProg?.status || 'not_started';
+                                    %>
+                                    <a href="/labs/<%= lab.id %>" class="flex items-center justify-between p-3 bg-gray-700 rounded-lg hover:bg-gray-650 transition-colors">
+                                        <div class="flex items-center space-x-3">
+                                            <div class="w-6 h-6 rounded flex items-center justify-center
+                                                <%= labStatus === 'completed' ? 'bg-green-600' :
+                                                   labStatus === 'in_progress' ? 'bg-yellow-600' :
+                                                   'bg-gray-600' %>">
+                                                <% if (labStatus === 'completed') { %>
+                                                    <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                                                    </svg>
+                                                <% } else { %>
+                                                    <svg class="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                                    </svg>
+                                                <% } %>
+                                            </div>
+                                            <span class="text-sm text-gray-300"><%= lab.title %></span>
+                                        </div>
+                                        <span class="px-2 py-1 rounded text-xs
+                                            <%= lab.difficulty === 'easy' ? 'bg-green-900 text-green-300' :
+                                               lab.difficulty === 'medium' ? 'bg-yellow-900 text-yellow-300' :
+                                               lab.difficulty === 'hard' ? 'bg-orange-900 text-orange-300' :
+                                               'bg-red-900 text-red-300' %>">
+                                            <%= lab.difficulty || 'medium' %>
+                                        </span>
+                                    </a>
+                                <% }); %>
+                            </div>
+                        </div>
+                    <% } %>
+                </div>
+            </div>
+        <% }); %>
+    </div>
+<% } else { %>
+    <div class="text-center py-12 bg-gray-800 rounded-xl border border-gray-700">
+        <p class="text-gray-400">No chapters yet</p>
+        <% if (typeof currentUser !== 'undefined' && currentUser && currentUser.canEditCourses && currentUser.canEditCourses()) { %>
+            <a href="/chapters/new?courseId=<%= course.id %>" class="mt-4 inline-block bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg">
+                Add First Chapter
+            </a>
+        <% } %>
+    </div>
+<% } %>

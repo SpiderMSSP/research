@@ -1,0 +1,188 @@
+<div class="max-w-4xl mx-auto">
+    <!-- Navigation -->
+    <div class="flex items-center justify-between mb-6">
+        <a href="/chapters/<%= chapter.id %>" class="text-gray-400 hover:text-white flex items-center text-sm">
+            <svg class="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+            Back to Chapter
+        </a>
+
+        <% if (typeof currentUser !== 'undefined' && currentUser && currentUser.canEditCourses && currentUser.canEditCourses()) { %>
+            <a href="/labs/<%= lab.id %>/edit" class="text-gray-400 hover:text-white text-sm">Edit Lab</a>
+        <% } %>
+    </div>
+
+    <!-- Lab Header -->
+    <div class="bg-gray-800 rounded-xl p-6 border border-gray-700 mb-8">
+        <div class="flex items-center justify-between mb-4">
+            <span class="px-3 py-1 rounded-full text-xs font-medium
+                <%= lab.difficulty === 'easy' ? 'bg-green-900 text-green-300' :
+                   lab.difficulty === 'medium' ? 'bg-yellow-900 text-yellow-300' :
+                   lab.difficulty === 'hard' ? 'bg-orange-900 text-orange-300' :
+                   'bg-red-900 text-red-300' %>">
+                <%= lab.difficulty || 'medium' %>
+            </span>
+            <% if (labProgress?.status === 'completed') { %>
+                <span class="px-3 py-1 bg-green-900 text-green-300 rounded-full text-xs font-medium flex items-center">
+                    <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                    </svg>
+                    Completed
+                </span>
+            <% } %>
+        </div>
+
+        <h1 class="text-2xl font-bold text-white mb-2"><%= lab.title %></h1>
+        <p class="text-gray-400"><%= lab.description %></p>
+
+        <% if (lab.tools && lab.tools.length > 0) { %>
+            <div class="mt-4 flex flex-wrap gap-2">
+                <span class="text-xs text-gray-500">Tools:</span>
+                <% lab.tools.forEach(tool => { %>
+                    <span class="px-2 py-1 bg-gray-700 rounded text-xs text-gray-300"><%= tool %></span>
+                <% }); %>
+            </div>
+        <% } %>
+
+        <% if (lab.filesPath) { %>
+            <div class="mt-4 p-3 bg-gray-700 rounded-lg">
+                <span class="text-xs text-gray-400">Lab Files:</span>
+                <code class="block text-green-400 text-sm mt-1"><%= lab.filesPath %></code>
+            </div>
+        <% } %>
+    </div>
+
+    <!-- Objectives -->
+    <% if (lab.objectives && lab.objectives.length > 0) { %>
+        <div class="bg-gray-800 rounded-xl p-6 border border-gray-700 mb-8">
+            <h2 class="text-lg font-bold text-white mb-4">Objectives</h2>
+            <ul class="space-y-2">
+                <% lab.objectives.forEach(obj => { %>
+                    <li class="flex items-start text-gray-300">
+                        <svg class="w-5 h-5 text-green-500 mr-2 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                        </svg>
+                        <%= obj %>
+                    </li>
+                <% }); %>
+            </ul>
+        </div>
+    <% } %>
+
+    <!-- Walkthrough -->
+    <% if (lab.walkthrough) { %>
+        <div class="bg-gray-800 rounded-xl p-6 border border-gray-700 mb-8">
+            <h2 class="text-lg font-bold text-white mb-4">Walkthrough</h2>
+            <div class="prose prose-invert prose-green max-w-none">
+                <%- marked(lab.walkthrough) %>
+            </div>
+        </div>
+    <% } %>
+
+    <!-- Hints -->
+    <% if (lab.hints && lab.hints.length > 0 && typeof currentUser !== 'undefined' && currentUser) { %>
+        <div class="bg-gray-800 rounded-xl p-6 border border-gray-700 mb-8" x-data="{ revealedHints: <%= labProgress?.hintsUsed || 0 %> }">
+            <h2 class="text-lg font-bold text-white mb-4">Hints</h2>
+            <div class="space-y-3">
+                <% lab.hints.forEach((hint, index) => { %>
+                    <div class="p-4 bg-gray-700 rounded-lg">
+                        <template x-if="revealedHints > <%= index %>">
+                            <div class="text-gray-300"><%- marked(hint) %></div>
+                        </template>
+                        <template x-if="revealedHints <= <%= index %>">
+                            <button @click="revealHint(<%= index %>)"
+                                    class="text-yellow-500 hover:text-yellow-400 text-sm">
+                                Reveal Hint <%= index + 1 %>
+                            </button>
+                        </template>
+                    </div>
+                <% }); %>
+            </div>
+        </div>
+    <% } %>
+
+    <!-- Solution (hidden unless completed) -->
+    <% if (lab.solution) { %>
+        <div class="bg-gray-800 rounded-xl p-6 border border-gray-700 mb-8" x-data="{ showSolution: <%= showSolution %> }">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-lg font-bold text-white">Solution</h2>
+                <% if (!showSolution) { %>
+                    <button @click="if(confirm('Are you sure? Viewing the solution will mark this lab as complete.')) { showSolution = true; markComplete(); }"
+                            class="text-yellow-500 hover:text-yellow-400 text-sm">
+                        Reveal Solution
+                    </button>
+                <% } %>
+            </div>
+
+            <template x-if="showSolution">
+                <div class="prose prose-invert prose-green max-w-none">
+                    <%- marked(lab.solution) %>
+                </div>
+            </template>
+            <template x-if="!showSolution">
+                <div class="text-center py-8 text-gray-500">
+                    <svg class="mx-auto h-12 w-12 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                    </svg>
+                    <p>Complete the lab to view the solution</p>
+                </div>
+            </template>
+        </div>
+    <% } %>
+
+    <!-- Actions -->
+    <div class="flex items-center justify-between">
+        <% if (prevLab) { %>
+            <a href="/labs/<%= prevLab.id %>" class="text-gray-400 hover:text-white flex items-center">
+                <svg class="w-5 h-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                </svg>
+                Previous Lab
+            </a>
+        <% } else { %>
+            <div></div>
+        <% } %>
+
+        <% if (typeof currentUser !== 'undefined' && currentUser && labProgress?.status !== 'completed') { %>
+            <button onclick="markComplete()" class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-medium">
+                Mark as Complete
+            </button>
+        <% } %>
+
+        <% if (nextLab) { %>
+            <a href="/labs/<%= nextLab.id %>" class="text-gray-400 hover:text-white flex items-center">
+                Next Lab
+                <svg class="w-5 h-5 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+            </a>
+        <% } else { %>
+            <div></div>
+        <% } %>
+    </div>
+</div>
+
+<script>
+function markComplete() {
+    fetch('/labs/<%= lab.id %>/complete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) location.reload();
+    });
+}
+
+function revealHint(index) {
+    fetch('/labs/<%= lab.id %>/hint', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) location.reload();
+    });
+}
+</script>

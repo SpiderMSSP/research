@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= typeof title !== 'undefined' ? title + ' | ' : '' %>Security Research Platform</title>
+
+    <!-- TailwindCSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            200: '#bbf7d0',
+                            300: '#86efac',
+                            400: '#4ade80',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            700: '#15803d',
+                            800: '#166534',
+                            900: '#14532d',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Highlight.js for code syntax highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+
+    <!-- Alpine.js for interactivity -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+    <!-- Custom styles -->
+    <link rel="stylesheet" href="/css/style.css">
+
+    <style>
+        /* Markdown content styling */
+        .prose pre {
+            background: #1e1e1e;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            overflow-x: auto;
+        }
+        .prose code {
+            background: #374151;
+            padding: 0.125rem 0.375rem;
+            border-radius: 0.25rem;
+            font-size: 0.875rem;
+        }
+        .prose pre code {
+            background: transparent;
+            padding: 0;
+        }
+        .prose table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .prose th, .prose td {
+            border: 1px solid #374151;
+            padding: 0.5rem;
+        }
+        .prose th {
+            background: #1f2937;
+        }
+        .prose blockquote {
+            border-left: 4px solid #22c55e;
+            padding-left: 1rem;
+            color: #9ca3af;
+        }
+
+        /* Story context box */
+        .story-box {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border-left: 4px solid #22c55e;
+        }
+
+        /* Progress bar animation */
+        .progress-bar {
+            transition: width 0.5s ease-out;
+        }
+    </style>
+</head>
+<body class="h-full bg-gray-900 text-gray-100" x-data="{ sidebarOpen: false }">
+    <div class="min-h-full">
+        <%- include('../partials/navbar') %>
+
+        <!-- Flash Messages -->
+        <% if (typeof success !== 'undefined' && success.length > 0) { %>
+            <div class="bg-green-800 border border-green-600 text-green-100 px-4 py-3 mx-4 mt-4 rounded-lg" role="alert">
+                <% success.forEach(msg => { %>
+                    <p><%= msg %></p>
+                <% }) %>
+            </div>
+        <% } %>
+
+        <% if (typeof error !== 'undefined' && error.length > 0) { %>
+            <div class="bg-red-800 border border-red-600 text-red-100 px-4 py-3 mx-4 mt-4 rounded-lg" role="alert">
+                <% error.forEach(msg => { %>
+                    <p><%= msg %></p>
+                <% }) %>
+            </div>
+        <% } %>
+
+        <!-- Main Content -->
+        <main class="py-6">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <%- body %>
+            </div>
+        </main>
+
+        <%- include('../partials/footer') %>
+    </div>
+
+    <script>
+        // Initialize highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('pre code').forEach((block) => {
+                hljs.highlightElement(block);
+            });
+        });
+    </script>
+    <script src="/js/app.js"></script>
+</body>
+</html>
