@@ -50,7 +50,7 @@ All attacks in this series share a critical characteristic: they execute malicio
 
 # 1. Memory Layout - How Programs Organize Space
 
-Understanding how a running program organizes its memory is foundational. Not to corrupt it, but to understand **what lives where** and **why the system trusts certain regions**.
+Understanding how a running program organizes its memory is foundational to understand **what lives where** and **why the system trusts certain regions**.
 
 1. **WHERE** things are stored in memory
 2. **HOW** they are organized
