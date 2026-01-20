@@ -580,4 +580,13 @@ When your code calls a library function like `printf()`, here's what happens:
 ```
 
 
+# Attack Theory
 
+We will start with some theory about what the attacker did to accomplish the previously shown POC, the thoery should be convenient for you if you made a good understanding of the previous `Prerequisites` section, after that we will start discussing how this theory got converted into the POC.
+
+In theory we can descript what the attacker done as following:
+
+- patch the main OS loader to accomplish code execution.
+- GOT and PLT hijacking to hook all relevent functions.
+- added hooks to all functions that take parameters like passwords from ssh or sudo operation and so on in the shell.
+- added a hook to these functions to store the password values to a file in tmp directory.
